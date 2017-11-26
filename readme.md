@@ -12,7 +12,7 @@ Partition a directory by size.
 
 # Usage
 
-    part-dir INPUT OUTPUT -s \<size\> \[-r | --recurse\] \[-p | --pack \<packing\>\]
+    part-dir INPUT OUTPUT -s <size> [-r | --recurse] [-p | --pack <packing>]
 
 `INPUT`: The directory to partition.  
 `OUTPUT`: The directory to copy parts to.  
