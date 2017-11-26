@@ -81,7 +81,7 @@ impl FromStr for Packing
             "none" => Ok(Packing::None),
             "normal" => Ok(Packing::Normal),
             "tight" => Ok(Packing::Tight),
-            _ => Err(format!("'{}' is not a packing options", s))
+            _ => Err(format!("'{}' is not a packing option", s))
         }
     }
 }
