@@ -28,7 +28,7 @@ and make part sizes closer the the maximum. Levels:
 
 - `none`: no packing (default)  
 - `normal`: pack parts with items from other parts
-` `tight`: sort parts by descending size before packing
+- `tight`: sort parts by descending size before packing
 
 This program only copies files, it will not delete any of the source files.
 Please look at the source code before you trust this with anything important.
