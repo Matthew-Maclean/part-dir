@@ -23,6 +23,8 @@ Partition a directory by size.
 - suffix `m` or `mb`: in megabytes  
 - suffix `g` or `gb`: in gigabytes
 
+`recurse`: If this flag is set, `part-dir` will also split up sub-directories.
+
 `<packing>`: The packing option, higher levels may reduce the number of parts,
 and make part sizes closer the the maximum. Levels:
 
