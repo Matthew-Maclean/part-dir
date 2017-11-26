@@ -30,7 +30,7 @@ impl FromStr for Size
         let mut num = String::new();
         let mut suf = String::new();
 
-        let mut in_num = false;
+        let mut in_num = true;
         for c in s.chars()
         {
             if in_num && c.is_digit(10)
