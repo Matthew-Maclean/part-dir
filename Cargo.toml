@@ -1,0 +1,6 @@
+[package]
+name = "part-dir"
+version = "0.1.0"
+authors = ["Matthew Maclean <myself123@live.com>"]
+
+[dependencies]
