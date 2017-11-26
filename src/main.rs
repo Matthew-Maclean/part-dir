@@ -3,6 +3,7 @@ extern crate structopt;
 
 mod options;
 mod item;
+mod item_stream;
 
 use structopt::StructOpt;
 
