@@ -29,21 +29,12 @@ fn main()
             exit(1);
         }
     };
-
     println!("{} parts ({} errors)", parts.len(), errors);
 
     let parts = pack(opts.packing, parts, opts.size.0);
+    println!("{} parts after packing", parts.len());
 
-    let (copied, errors) = match copy(&opts.output, parts)
-    {
-        Ok((c, e)) => (c, e),
-        Err(e) =>
-        {
-            eprintln!("Copying error: {}", e.description());
-            exit(1);
-        }
-    };
-
+    let (copied, errors) = copy(&opts.output, parts);
     println!("{} copied ({} errors)", copied, errors);
 }
 
@@ -99,6 +90,8 @@ fn pack(mode: Packing, mut parts: Vec<part::Part>, size: u64) -> Vec<part::Part>
                 }).collect::<Vec<_>>();
                 unpacked
             }).collect::<Vec<_>>();
+
+            packed.push(part);
         }
         else
         {
@@ -109,7 +102,25 @@ fn pack(mode: Packing, mut parts: Vec<part::Part>, size: u64) -> Vec<part::Part>
     packed
 }
 
-fn copy(_output: &Path, _parts: Vec<part::Part>) -> io::Result<(u64, u64)>
+fn copy(output: &Path, parts: Vec<part::Part>) -> (u64, u64)
 {
-    unimplemented!()
+    let mut ok = 0u64;
+    let mut err = 0u64;
+    for (i, part) in parts.into_iter().enumerate()
+    {
+        let path = output.join(format!("part-{}", i));
+        for item in part.items
+        {
+            if item.copy_to(&path)
+            {
+                ok += 1;
+            }
+            else
+            {
+                err += 1;
+            }
+        }
+    }
+
+    (ok, err)
 }
