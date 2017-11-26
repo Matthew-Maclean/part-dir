@@ -4,6 +4,7 @@ extern crate structopt;
 mod options;
 mod item;
 mod item_stream;
+mod part;
 
 use structopt::StructOpt;
 
@@ -19,9 +20,9 @@ fn main()
 
     let opts = Options::from_args();
 
-    let (parts, ok, errors) = match partition(&opts.input, opts.size.0, opts.recurse)
+    let (parts, errors) = match partition(&opts.input, opts.size.0, opts.recurse)
     {
-        Ok((p, o, e)) => (p, o, e),
+        Ok((p, e)) => (p, e),
         Err(e) =>
         {
             eprintln!("Partitioning error: {}", e.description());
@@ -29,9 +30,9 @@ fn main()
         }
     };
 
-    println!("{} parts ({} items, {} errors)", parts.len(), ok, errors);
+    println!("{} parts ({} errors)", parts.len(), errors);
 
-    let parts = pack(opts.packing, parts);
+    let parts = pack(opts.packing, parts, opts.size.0);
 
     let (copied, errors) = match copy(&opts.output, parts)
     {
@@ -46,17 +47,69 @@ fn main()
     println!("{} copied ({} errors)", copied, errors);
 }
 
-fn partition(_input: &Path, _size: u64, _recurse: bool) -> io::Result<(Vec<()>, u64, u64)>
+fn partition(input: &Path, size: u64, recurse: bool) -> io::Result<(Vec<part::Part>, u64)>
 {
-    unimplemented!()
+    let mut errors = 0u64;
+
+    let parts =
+    {
+        let stream = item_stream::ItemStream::new(input, &mut errors, recurse)?;
+
+        part::Part::partition(stream, size)
+    };
+
+    Ok((parts, errors))
 }
 
-fn pack(_mode: Packing, _parts: Vec<()>) -> Vec<()>
+fn pack(mode: Packing, mut parts: Vec<part::Part>, size: u64) -> Vec<part::Part>
 {
-    unimplemented!()
+    if mode == options::Packing::None
+    {
+        return parts;
+    }
+    else if mode == options::Packing::Tight
+    {
+        use std::cmp::Ord;
+
+        parts.sort_by(|a, b| a.size.cmp(&b.size).reverse());
+    }
+
+    let mut packed = Vec::new();
+    while let Some(mut part) = parts.pop()
+    {
+        if part.items.len() == 0
+        {
+            continue;
+        }
+        else if part.size < size
+        {
+            parts = parts.into_iter().map(|mut unpacked|
+            {
+                unpacked.items = unpacked.items.into_iter().filter_map(|item|
+                {
+                    if item.size() + part.size <= size
+                    {
+                        part.add(item);
+                        None
+                    }
+                    else
+                    {
+                        Some(item)
+                    }
+                }).collect::<Vec<_>>();
+                unpacked
+            }).collect::<Vec<_>>();
+        }
+        else
+        {
+            packed.push(part);
+        }
+    }
+
+    packed
 }
 
-fn copy(_output: &Path, _parts: Vec<()>) -> io::Result<(u64, u64)>
+fn copy(_output: &Path, _parts: Vec<part::Part>) -> io::Result<(u64, u64)>
 {
     unimplemented!()
 }

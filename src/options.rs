@@ -62,7 +62,7 @@ impl FromStr for Size
 }
 
 /// A packing mode
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Packing
 {
     None,
