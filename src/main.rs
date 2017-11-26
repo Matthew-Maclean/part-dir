@@ -2,6 +2,7 @@ extern crate structopt;
 #[macro_use] extern crate structopt_derive;
 
 mod options;
+mod item;
 
 use structopt::StructOpt;
 
