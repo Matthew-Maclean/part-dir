@@ -4,18 +4,18 @@ use std::io;
 
 use item::Item;
 
-pub struct ItemStream
+pub struct ItemStream<'a>
 {
     path: PathBuf,
     recurse: bool,
     current: ReadDir,
     dirs: Vec<ReadDir>,
-    errors: u64,
+    errors: &'a mut u64,
 }
 
-impl ItemStream
+impl<'a> ItemStream<'a>
 {
-    pub fn new<P>(path: P, recurse: bool) -> io::Result<ItemStream>
+    pub fn new<P>(path: P, errors: &'a mut u64, recurse: bool) -> io::Result<ItemStream<'a>>
         where P: AsRef<Path>
     {
         Ok(ItemStream
@@ -24,7 +24,7 @@ impl ItemStream
             recurse: recurse,
             current: read_dir(path.as_ref())?,
             dirs: Vec::new(),
-            errors: 0,
+            errors: errors,
         })
     }
 
@@ -37,7 +37,7 @@ impl ItemStream
                 match res
                 {
                     Ok(entry) => return Some(entry),
-                    Err(_) => self.errors += 1,
+                    Err(_) => *self.errors += 1,
                 }
             }
             else
@@ -167,7 +167,7 @@ impl ItemStream
     }
 }
 
-impl Iterator for ItemStream
+impl<'a> Iterator for ItemStream<'a>
 {
     type Item = Item;
 
@@ -182,7 +182,7 @@ impl Iterator for ItemStream
                 Ok(ft) => ft,
                 Err(_) =>
                 {
-                    self.errors += 1;
+                    *self.errors += 1;
                     continue;
                 },
             };
@@ -198,7 +198,7 @@ impl Iterator for ItemStream
                     Ok(rd) => rd,
                     Err(_) =>
                     {
-                        self.errors += 1;
+                        *self.errors += 1;
                         continue;
                     },
                 };
@@ -215,7 +215,7 @@ impl Iterator for ItemStream
             }
             else // lol symlinks
             {
-                self.errors += 1;
+                *self.errors += 1;
                 continue;
             }
         }
